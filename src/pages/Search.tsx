@@ -67,12 +67,12 @@ const SearchPage = () => {
           </div>
           <div>
             <label className="text-sm font-medium">Categoría</label>
-            <Select value={category} onValueChange={(val) => { const next = new URLSearchParams(params); next.set('category', val); next.set('page','1'); setParams(next); }}>
+            <Select value={category || undefined} onValueChange={(val) => { const next = new URLSearchParams(params); if (val === 'all') { next.delete('category'); } else { next.set('category', val); } next.set('page','1'); setParams(next); }}>
               <SelectTrigger>
                 <SelectValue placeholder="Todas" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas</SelectItem>
+                <SelectItem value="all">Todas</SelectItem>
                 {categories?.map((c) => (
                   <SelectItem key={c} value={c}>{c}</SelectItem>
                 ))}

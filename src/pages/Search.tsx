@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import SEO from "@/components/SEO";
 import ProductGrid from "@/components/ProductGrid";
@@ -118,7 +118,7 @@ const SearchPage = () => {
                   next.set('page', String(pageNum));
                   return (
                     <PaginationItem key={pageNum}>
-                      <PaginationLink isActive={pageNum === data.page} to={`?${next.toString()}`}>
+                      <PaginationLink isActive={pageNum === data.page} href={`?${next.toString()}`}>
                         {pageNum}
                       </PaginationLink>
                     </PaginationItem>

@@ -5,8 +5,8 @@ export const RequireAuth = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
   const loc = useLocation();
   useEffect(() => {
-    const isAuth = localStorage.getItem('admin_auth') === 'true';
-    if (!isAuth) {
+    const token = localStorage.getItem('admin_token');
+    if (!token) {
       navigate('/admin/login?next=' + encodeURIComponent(loc.pathname + loc.search), { replace: true });
     }
   }, [navigate, loc]);

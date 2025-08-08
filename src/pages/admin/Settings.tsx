@@ -4,9 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useSettings } from "@/context/SettingsContext";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const SettingsAdmin = () => {
   const { settings, saveSettings, saveFooter } = useSettings();
+  const navigate = useNavigate();
   const [name, setName] = useState(settings.siteName);
   const [primary, setPrimary] = useState(settings.colors.primary);
   const [phone, setPhone] = useState(settings.whatsapp.phone);
@@ -19,6 +21,9 @@ const SettingsAdmin = () => {
   return (
     <div className="container py-10 max-w-2xl">
       <SEO title="Configuración - Admin" description="Personaliza tu tienda" canonical={window.location.origin + '/admin/configuracion'} />
+      <div className="mb-4">
+        <Button variant="ghost" onClick={() => navigate('/admin')}>← Volver</Button>
+      </div>
       <h1 className="text-2xl font-semibold mb-6">Configuración del sitio</h1>
 
       <section className="space-y-4 mb-8">

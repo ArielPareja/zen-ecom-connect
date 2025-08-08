@@ -11,6 +11,8 @@ const SettingsAdmin = () => {
   const navigate = useNavigate();
   const [name, setName] = useState(settings.siteName);
   const [primary, setPrimary] = useState(settings.colors.primary);
+  const [secondary, setSecondary] = useState(settings.colors?.secondary || '#f1f5f9');
+  const [background, setBackground] = useState(settings.colors?.background || '#ffffff');
   const [phone, setPhone] = useState(settings.whatsapp.phone);
   const [greeting, setGreeting] = useState(settings.whatsapp.greeting);
   const [endOfMessage, setEndOfMessage] = useState(settings.whatsapp.endOfMessage);
@@ -33,7 +35,15 @@ const SettingsAdmin = () => {
           <label className="text-sm font-medium">Color primario</label>
           <input type="color" value={primary} onChange={(e) => setPrimary(e.target.value)} className="ml-3 h-8 w-12 p-0 border rounded" />
         </div>
-        <Button onClick={() => saveSettings({ siteName: name, colors: { primary } })}>Guardar cambios</Button>
+        <div>
+          <label className="text-sm font-medium">Color secundario</label>
+          <input type="color" value={secondary} onChange={(e) => setSecondary(e.target.value)} className="ml-3 h-8 w-12 p-0 border rounded" />
+        </div>
+        <div>
+          <label className="text-sm font-medium">Color de fondo</label>
+          <input type="color" value={background} onChange={(e) => setBackground(e.target.value)} className="ml-3 h-8 w-12 p-0 border rounded" />
+        </div>
+        <Button onClick={() => saveSettings({ siteName: name, colors: { primary, secondary, background } })}>Guardar cambios</Button>
       </section>
 
       <section className="space-y-4 mb-8">

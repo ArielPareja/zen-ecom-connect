@@ -3,7 +3,7 @@ import { getFooter, getSiteSettings, getWhatsAppSettings, updateFooter, updateSi
 
 export type SiteSettings = {
   siteName: string;
-  colors: { primary: string };
+  colors: { primary: string; secondary?: string; background?: string };
   whatsapp: { phone: string; greeting: string; endOfMessage: string };
   footer: { address?: string; email?: string; note?: string };
 };
@@ -53,9 +53,15 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           footer: footer || settings.footer,
         } as SiteSettings;
         setSettings(merged);
-        // Aplicar color primario al :root si viene en HEX
+        // Aplicar colores al :root si vienen en HEX
         if (merged.colors?.primary) {
           document.documentElement.style.setProperty("--primary", hexToHsl(merged.colors.primary));
+        }
+        if (merged.colors?.secondary) {
+          document.documentElement.style.setProperty("--secondary", hexToHsl(merged.colors.secondary));
+        }
+        if (merged.colors?.background) {
+          document.documentElement.style.setProperty("--background", hexToHsl(merged.colors.background));
         }
       } catch {
         // silencioso, usamos mocks/localStorage
@@ -69,13 +75,20 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [settings]);
 
   const saveSettings = async (s: Partial<SiteSettings>) => {
-    const next = { ...settings, ...s } as SiteSettings;
+    const mergedColors = s.colors ? { ...settings.colors, ...s.colors } : settings.colors;
+    const next = { ...settings, ...s, colors: mergedColors } as SiteSettings;
     setSettings(next);
     try {
       await updateSiteSettings(next);
     } catch {}
     if (next.colors?.primary) {
       document.documentElement.style.setProperty("--primary", hexToHsl(next.colors.primary));
+    }
+    if (next.colors?.secondary) {
+      document.documentElement.style.setProperty("--secondary", hexToHsl(next.colors.secondary));
+    }
+    if (next.colors?.background) {
+      document.documentElement.style.setProperty("--background", hexToHsl(next.colors.background));
     }
   };
 

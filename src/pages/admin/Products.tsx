@@ -3,10 +3,12 @@ import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createProduct, deleteProduct, searchProducts, updateProduct, getStats } from "@/services/products";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate } from "react-router-dom";
+import { Settings, Plus, Search, BarChart3 } from "lucide-react";
 
 const Dropzone = ({ onFiles }: { onFiles: (urls: string[]) => void }) => {
   const [hover, setHover] = useState(false);
@@ -80,16 +82,67 @@ const ProductsAdmin = () => {
   });
 
   return (
-    <div className="container py-10">
-      <SEO title="Productos - Admin" description="Administra tus productos" canonical={window.location.origin + '/admin/productos'} />
-      <div className="mb-4">
-        <Button variant="ghost" onClick={() => navigate('/admin')}>← Volver</Button>
+    <div className="container py-10 max-w-7xl">
+      <SEO title="Panel de Control - Admin" description="Administra tu tienda online" canonical={window.location.origin + '/admin/productos'} />
+      
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Panel de Control</h1>
+          <p className="text-muted-foreground">Gestiona tus productos y configuración del sitio</p>
+        </div>
+        <Button onClick={() => navigate('/admin/configuracion')} variant="outline" className="gap-2">
+          <Settings className="h-4 w-4" />
+          Configuración del Sitio
+        </Button>
       </div>
-      <h1 className="text-2xl font-semibold mb-6">Productos</h1>
 
-      <div className="grid gap-8 md:grid-cols-2">
-        <section className="space-y-3">
-          <h2 className="font-medium">Crear producto</h2>
+      {/* Stats Cards */}
+      <div className="grid gap-4 sm:grid-cols-3 mb-8">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Productos Activos</CardTitle>
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.data?.active ?? '-'}</div>
+            <p className="text-xs text-muted-foreground">Productos disponibles para venta</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total de Productos</CardTitle>
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.data?.total ?? '-'}</div>
+            <p className="text-xs text-muted-foreground">Total en inventario</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Productos Inactivos</CardTitle>
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.data?.inactive ?? '-'}</div>
+            <p className="text-xs text-muted-foreground">Productos no disponibles</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-8 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5" />
+              {editingId ? 'Editar Producto' : 'Crear Producto'}
+            </CardTitle>
+            <CardDescription>
+              {editingId ? 'Modifica los detalles del producto' : 'Añade un nuevo producto a tu catálogo'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
           <Input placeholder="Nombre" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
           <Textarea placeholder="Descripción" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
           <Input type="number" placeholder="Precio" value={form.price} onChange={(e) => setForm((f) => ({ ...f, price: Number(e.target.value) }))} />
@@ -114,66 +167,81 @@ const ProductsAdmin = () => {
               </Button>
             )}
           </div>
-        </section>
+          </CardContent>
+        </Card>
 
-        <section>
-          <h2 className="font-medium mb-3">Listado</h2>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Search className="h-5 w-5" />
+              Inventario de Productos
+            </CardTitle>
+            <CardDescription>
+              Busca y gestiona tus productos existentes
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
 
-          <div className="mb-4 flex items-center gap-2">
-            <Input
-              placeholder="Buscar productos (solo admin)"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-3 mb-4">
-            <div className="rounded-lg border p-3">
-              <div className="text-xs text-muted-foreground">Activos</div>
-              <div className="text-xl font-semibold">{stats.data?.active ?? '-'}</div>
+            <div className="mb-4 flex items-center gap-2">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar productos..."
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+              />
             </div>
-            <div className="rounded-lg border p-3">
-              <div className="text-xs text-muted-foreground">Total</div>
-              <div className="text-xl font-semibold">{stats.data?.total ?? '-'}</div>
-            </div>
-            <div className="rounded-lg border p-3">
-              <div className="text-xs text-muted-foreground">Inactivos</div>
-              <div className="text-xl font-semibold">{stats.data?.inactive ?? '-'}</div>
-            </div>
-          </div>
 
-          <ul className="divide-y">
-            {data?.docs?.map((p) => (
-              <li key={p._id} className="py-3 flex items-center justify-between">
-                <div>
-                  <div className="font-medium">{p.name}</div>
-                  <div className="text-xs text-muted-foreground">${p.price.toFixed(2)}</div>
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {data?.docs?.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Plus className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No hay productos aún</p>
+                  <p className="text-sm">Crea tu primer producto usando el formulario</p>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setEditingId(p._id);
-                      setForm({
-                        name: p.name,
-                        description: p.description,
-                        price: p.price,
-                        images: p.images || [],
-                        categories: p.categories?.join(', ') || '',
-                        featured: p.featured,
-                      });
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                  >
-                    Editar
-                  </Button>
-                  <Button variant="destructive" size="sm" onClick={() => del.mutate(p._id)}>Eliminar</Button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
+              ) : (
+                data?.docs?.map((p) => (
+                  <div key={p._id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      {p.images?.[0] && (
+                        <img src={p.images[0]} alt={p.name} className="h-12 w-12 object-cover rounded" />
+                      )}
+                      <div>
+                        <div className="font-medium">{p.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          ${p.price.toFixed(2)}
+                          {p.featured && <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-1 rounded">Featured</span>}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setEditingId(p._id);
+                          setForm({
+                            name: p.name,
+                            description: p.description,
+                            price: p.price,
+                            images: p.images || [],
+                            categories: p.categories?.join(', ') || '',
+                            featured: p.featured,
+                          });
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                      >
+                        Editar
+                      </Button>
+                      <Button variant="destructive" size="sm" onClick={() => del.mutate(p._id)}>
+                        Eliminar
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

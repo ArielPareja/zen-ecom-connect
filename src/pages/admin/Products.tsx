@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { createProduct, deleteProduct, searchProducts, updateProduct, getStats } from "@/services/products";
+import { createProduct, deleteProduct, searchProducts, updateProduct, getStats, exportProducts } from "@/services/products";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate } from "react-router-dom";
-import { Settings, Plus, Search, BarChart3 } from "lucide-react";
+import { Settings, Plus, Search, BarChart3, Download } from "lucide-react";
 
 const Dropzone = ({ onFiles }: { onFiles: (urls: string[]) => void }) => {
   const [hover, setHover] = useState(false);
@@ -81,6 +81,20 @@ const ProductsAdmin = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-products'] }),
   });
 
+  const exportMut = useMutation({
+    mutationFn: () => exportProducts('csv'),
+    onSuccess: (blob: Blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `productos_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    },
+  });
+
   return (
     <div className="container py-10 max-w-7xl">
       <SEO title="Panel de Control - Admin" description="Administra tu tienda online" canonical={window.location.origin + '/admin/productos'} />
@@ -91,10 +105,16 @@ const ProductsAdmin = () => {
           <h1 className="text-3xl font-bold tracking-tight">Panel de Control</h1>
           <p className="text-muted-foreground">Gestiona tus productos y configuración del sitio</p>
         </div>
-        <Button onClick={() => navigate('/admin/configuracion')} variant="outline" className="gap-2">
-          <Settings className="h-4 w-4" />
-          Configuración del Sitio
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => exportMut.mutate()} variant="outline" className="gap-2" disabled={exportMut.isPending}>
+            <Download className="h-4 w-4" />
+            {exportMut.isPending ? 'Exportando...' : 'Exportar CSV'}
+          </Button>
+          <Button onClick={() => navigate('/admin/configuracion')} variant="outline" className="gap-2">
+            <Settings className="h-4 w-4" />
+            Configuración del Sitio
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}

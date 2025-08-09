@@ -211,3 +211,44 @@ export async function getStats(): Promise<{ active: number; total: number; inact
     return { active, total, inactive: total - active };
   }
 }
+
+export async function exportProducts(format: 'csv' | 'xlsx' = 'csv'): Promise<Blob> {
+  try {
+    const response = await fetch('/api/products/export', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(typeof window !== 'undefined' && localStorage.getItem('admin_token') 
+          ? { Authorization: `Bearer ${localStorage.getItem('admin_token')}` } 
+          : {}),
+      },
+      body: JSON.stringify({ format }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Export failed: ${response.status}`);
+    }
+
+    return await response.blob();
+  } catch (error) {
+    console.warn('Failed to export from backend, generating mock CSV:', error);
+    
+    // Mock CSV generation
+    const headers = ['ID', 'Nombre', 'Descripción', 'Precio', 'Categorías', 'Activo', 'Destacado', 'Imágenes'];
+    const csvContent = [
+      headers.join(','),
+      ...sampleProducts.map(product => [
+        product._id,
+        `"${product.name.replace(/"/g, '""')}"`,
+        `"${product.description.replace(/"/g, '""')}"`,
+        product.price,
+        `"${product.categories?.join(';') || ''}"`,
+        product.active ? 'Sí' : 'No',
+        product.featured ? 'Sí' : 'No',
+        product.images?.length || 0
+      ].join(','))
+    ].join('\n');
+
+    return new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  }
+}

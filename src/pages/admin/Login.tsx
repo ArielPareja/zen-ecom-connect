@@ -3,12 +3,18 @@ import { useEffect, useState } from "react";
 import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
     const err = localStorage.getItem('auth_error');
@@ -18,13 +24,51 @@ const Login = () => {
     }
   }, []);
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Placeholder reCAPTCHA y auth. Integrar con Supabase para producción.
-    localStorage.setItem('admin_token', 'dev-token');
-    localStorage.setItem('admin_auth', 'true');
-    const next = params.get('next') || '/admin';
-    navigate(next);
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          password: password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Error de autenticación');
+      }
+
+      if (!data.access_token) {
+        throw new Error('Token de acceso no recibido');
+      }
+
+      // Guardar el JWT token
+      localStorage.setItem('admin_token', data.access_token);
+      localStorage.setItem('admin_auth', 'true');
+      
+      toast({
+        title: "Login exitoso",
+        description: "Bienvenido al panel de administración",
+      });
+
+      const next = params.get('next') || '/admin';
+      navigate(next);
+
+    } catch (error: any) {
+      console.error('Login error:', error);
+      setError(error.message || 'Error de conexión. Intenta nuevamente.');
+    } finally {
+      setLoading(false);
+    }
   };
   return (
     <div className="container py-10 max-w-md">
@@ -38,15 +82,33 @@ const Login = () => {
           </Alert>
         )}
         <div>
-          <label className="text-sm font-medium">Email</label>
-          <Input type="email" required placeholder="admin@correo.com" />
+          <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+          <Input 
+            id="email"
+            type="email" 
+            required 
+            placeholder="admin@correo.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={loading}
+          />
         </div>
         <div>
-          <label className="text-sm font-medium">Contraseña</label>
-          <Input type="password" required placeholder="••••••••" />
+          <Label htmlFor="password" className="text-sm font-medium">Contraseña</Label>
+          <Input 
+            id="password"
+            type="password" 
+            required 
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
+          />
         </div>
         <div className="rounded-md border p-3 text-xs text-muted-foreground">reCAPTCHA aquí</div>
-        <Button type="submit" className="w-full">Ingresar</Button>
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? 'Iniciando sesión...' : 'Ingresar'}
+        </Button>
         <Button variant="link" type="button" onClick={() => navigate('/admin/forgot-password')}>¿Olvidaste tu contraseña?</Button>
       </form>
     </div>
